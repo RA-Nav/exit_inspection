@@ -9,9 +9,9 @@ best weights to ONNX at a fixed 736x1280 input, the layout Yolo26RGBD (YOLOs-CPP
 Augmentations: horizontal flips on (E001 <-> E002 and left <-> right arrows keep their class), vertical flips off
 (an arrow down must stay down), small hue jitter (the safety green is the cue).
 
-Usage (.venv-yolo python):
-  python training/train.py --data ~/RaNAV/datasets/exit_sign/synthetic/data.yaml --epochs 60 \
-      --export ~/RaNAV/models/exit_sign/exit_sign_736x1280.onnx
+Usage (.venv python of the workspace):
+  python training/train.py --data ~/ranav_ws/datasets/exit_sign/synthetic/data.yaml --epochs 60 \
+      --export ~/ranav_ws/models/exit_sign/exit_sign_736x1280.onnx
 """
 
 import argparse
@@ -33,9 +33,9 @@ def main():
     ap.add_argument("--imgsz", type=int, default=1280)
     ap.add_argument("--batch", type=int, default=6)  # 12 at 1280 fills the 8 GB laptop GPU and crawls
     ap.add_argument("--workers", type=int, default=6)
-    ap.add_argument("--project", default=os.path.expanduser("~/RaNAV/datasets/exit_sign/runs"))
+    ap.add_argument("--project", default=os.path.expanduser("~/ranav_ws/datasets/exit_sign/runs"))
     ap.add_argument("--name", default="exit_sign")
-    ap.add_argument("--export", default=os.path.expanduser("~/RaNAV/models/exit_sign/exit_sign_736x1280.onnx"))
+    ap.add_argument("--export", default=os.path.expanduser("~/ranav_ws/models/exit_sign/exit_sign_736x1280.onnx"))
     ap.add_argument("--export-only", help="skip training, export these weights")
     args = ap.parse_args()
 

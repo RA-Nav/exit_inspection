@@ -8,8 +8,8 @@ class overlaps its box (IoU >= --iou); class accuracy is reported among the foun
 
 Gate of the spec: recall >= 0.9 on the sim renders up to 10 m.
 
-Usage (.venv-yolo python):
-  python training/evaluate.py ~/RaNAV/models/exit_sign/exit_sign_736x1280.onnx ~/RaNAV/datasets/exit_sign/sim_renders
+Usage (.venv python of the workspace):
+  python training/evaluate.py ~/ranav_ws/models/exit_sign/exit_sign_736x1280.onnx ~/ranav_ws/datasets/exit_sign/sim_renders
 """
 
 import argparse

@@ -8,7 +8,7 @@ optimized_poses.txt in <save_directory>), merges them into exits and writes <sav
 Without usable pose files the exits keep the live odometry coordinates (anchored: odometry, with a warning).
 
 tare_finish_merge_map.py runs it after the map merge (parameter exits); by hand:
-  ros2 run exit_inspection finalize_exits.py ~/RaNAV/src/FAST_LIO_SLAM_ROS2/save_data
+  ros2 run exit_inspection finalize_exits.py ~/ranav_ws/src/map_generator/save_data
 """
 
 import argparse

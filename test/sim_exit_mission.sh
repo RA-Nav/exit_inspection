@@ -12,11 +12,12 @@
 #   SIM_ARGS as in sim_exit_mapping.sh. Exit code: the one of check_zones_gt.py (0 = pass).
 
 W=$(realpath -m "${1:?work dir}")
+WS=$(realpath "$(dirname "$(realpath "$0")")/../../..")  # the workspace: this is <ws>/src/exit_inspection/test
 TIMEOUT=${TIMEOUT:-1200}
 export ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-83}
 HERE=$(dirname "$(realpath "$0")")
 source /opt/ros/jazzy/setup.bash
-source "$HOME/RaNAV/install/setup.bash"
+source "$WS/install/setup.bash"
 mkdir -p "$W/save/exit_inspection"
 cd "$W" || exit 2
 PKG=$(ros2 pkg prefix exit_inspection)/share/exit_inspection
@@ -54,7 +55,7 @@ print(x, y, z, yaw)")
 echo "[$(date +%T)] base at FAST-LIO start (world): $BASE0"
 echo "$BASE0" > base0.txt
 
-setsid ros2 launch fast_lio fast_lio_slam_launch.xml rviz:=false people:=false > lio.log 2>&1 &
+setsid ros2 launch ranav_bringup fast_lio_slam_launch.xml rviz:=false people:=false save_directory:="$W/save_data/" > lio.log 2>&1 &
 PIDS+=($!)
 sleep 10
 
@@ -64,7 +65,7 @@ else
   python3 "$HERE/gt_to_exits.py" "$PKG/worlds/exit_room_gt.yaml" save/exit_inspection/exits.yaml --base0 $BASE0
 fi
 [ -n "$MAP" ] && cp "$MAP" save/optimized_map.pcd
-NVLIBS=$(ls -d "$HOME"/RaNAV/.venv-yolo/lib/python3.*/site-packages/nvidia/*/lib 2>/dev/null | tr '\n' ':')
+NVLIBS=$(ls -d "$WS"/.venv/lib/python3.*/site-packages/nvidia/*/lib 2>/dev/null | tr '\n' ':')
 echo "[$(date +%T)] mission"
 LD_LIBRARY_PATH="$NVLIBS$LD_LIBRARY_PATH" setsid ros2 launch exit_inspection exit_mission_launch.xml \
   save_directory:="$W/save" far:=false planner:=direct auto_start:=true debug_dump:=true > mission.log 2>&1 &

@@ -9,22 +9,23 @@
 #      exploration's save_data, started once the graph is loaded; check_zones_gt.py on the report.
 #
 # Usage: test/sim_exit_full.sh <work_dir>
-#   <work_dir>/explore: exploration (SC-PGO save_data in ./src/FAST_LIO_SLAM_ROS2/save_data there), <work_dir>/mission:
+#   <work_dir>/explore: exploration (SC-PGO save_data in <work_dir>/explore/save_data), <work_dir>/mission:
 #   the mission's own FAST-LIO/SC-PGO output. EXPLORE_TIMEOUT (default 2400 s wall), MISSION_TIMEOUT (1800 s),
 #   ROS_DOMAIN_ID (default 83). SKIP_EXPLORE=1 reuses an earlier exploration in <work_dir>/explore.
 #   Exit code: 0 when both checks pass.
 
 W=$(realpath -m "${1:?work dir}")
+WS=$(realpath "$(dirname "$(realpath "$0")")/../../..")  # the workspace: this is <ws>/src/exit_inspection/test
 EXPLORE_TIMEOUT=${EXPLORE_TIMEOUT:-2400}
 MISSION_TIMEOUT=${MISSION_TIMEOUT:-1800}
 export ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-83}
 HERE=$(dirname "$(realpath "$0")")
 source /opt/ros/jazzy/setup.bash
-source "$HOME/RaNAV/install/setup.bash"
+source "$WS/install/setup.bash"
 PKG=$(ros2 pkg prefix exit_inspection)/share/exit_inspection
 AC=$(ros2 pkg prefix acados_legged_controller)/share/acados_legged_controller
-NVLIBS=$(ls -d "$HOME"/RaNAV/.venv-yolo/lib/python3.*/site-packages/nvidia/*/lib 2>/dev/null | tr '\n' ':')
-SAVE="$W/explore/src/FAST_LIO_SLAM_ROS2/save_data"
+NVLIBS=$(ls -d "$WS"/.venv/lib/python3.*/site-packages/nvidia/*/lib 2>/dev/null | tr '\n' ':')
+SAVE="$W/explore/save_data"
 PIDS=()
 stop_all() {
   for p in "${PIDS[@]}"; do kill -INT -"$p" 2>/dev/null; done
@@ -37,7 +38,7 @@ stop_all() {
 }
 trap stop_all EXIT
 
-start_robot() {  # sim + controller, robot standing at the spawn; prints the base pose (world) to base0.txt
+start_robot() {  # [slam]: sim + controller, robot standing at the spawn; prints the base pose (world) to base0.txt
   echo "[$(date +%T)] sim"
   setsid ros2 launch exit_inspection exit_room_launch.xml server:=true \
     controllers_yaml:="$AC/config/ros2_controllers.yaml" > sim.log 2>&1 &
@@ -60,9 +61,13 @@ groups = re.findall(r'\[\s*(' + num + r')\s+(' + num + r')\s+(' + num + r')\s*\]
 (x, y, z), (_, _, yaw) = [tuple(map(float, g)) for g in groups[:2]]
 print(x, y, z, yaw)" > base0.txt
   echo "[$(date +%T)] base at FAST-LIO start (world): $(cat base0.txt)"
-  setsid ros2 launch fast_lio fast_lio_slam_launch.xml rviz:=false people:=false > lio.log 2>&1 &
-  PIDS+=($!)
-  sleep 10
+  # slam: FAST-LIO/SC-PGO of its own, output in ./save_data (the exploration gets them from explore_warehouse_launch.xml)
+  if [ "${1:-}" = slam ]; then
+    setsid ros2 launch ranav_bringup fast_lio_slam_launch.xml rviz:=false people:=false \
+      save_directory:="$PWD/save_data/" > lio.log 2>&1 &
+    PIDS+=($!)
+    sleep 10
+  fi
 }
 
 # ------------------------------------------------------------------ 1. exploration
@@ -71,8 +76,8 @@ if [ -z "$SKIP_EXPLORE" ]; then
   mkdir -p "$W/explore" && cd "$W/explore" || exit 2
   start_robot || exit 2
   echo "[$(date +%T)] exploration (TARE + exits)"
-  LD_LIBRARY_PATH="$NVLIBS$LD_LIBRARY_PATH" setsid ros2 launch tare_planner explore_warehouse_launch.xml \
-    auto_start:=true exits:=true rviz:=false > explore.log 2>&1 &
+  LD_LIBRARY_PATH="$NVLIBS$LD_LIBRARY_PATH" setsid ros2 launch ranav_bringup explore_warehouse_launch.xml \
+    auto_start:=true exits:=true rviz:=false people:=false save_directory:="$SAVE/" > explore.log 2>&1 &
   PIDS+=($!)
   for _ in $(seq 1 $((EXPLORE_TIMEOUT / 10))); do
     grep -q "exits written" explore.log && break
@@ -95,7 +100,7 @@ done
 # ------------------------------------------------------------------ 2. mission
 rm -rf "$W/mission"
 mkdir -p "$W/mission" && cd "$W/mission" || exit 2
-start_robot || exit 2
+start_robot slam || exit 2
 echo "[$(date +%T)] mission (far_planner on the saved graph)"
 LD_LIBRARY_PATH="$NVLIBS$LD_LIBRARY_PATH" setsid ros2 launch exit_inspection exit_mission_launch.xml \
   save_directory:="$SAVE" far:=true planner:=far auto_start:=false debug_dump:=true > mission.log 2>&1 &

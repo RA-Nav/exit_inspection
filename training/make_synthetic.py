@@ -15,9 +15,9 @@ unlabeled sign gets in.
 Sign sizes: 8-100 px tall at 1280x720 (12-150 px at 1080p); view angles up to 65 deg sideways, 30 deg from below.
 Distractors: other green safety signs (first aid, eyewash, plain panels), red fire signs, green lights, screens.
 
-Usage (.venv-yolo python):
-  python training/make_synthetic.py ~/RaNAV/datasets/exit_sign/synthetic --n-train 8000 --n-val 800 \
-      --backgrounds ~/RaNAV/datasets/voc2007_dl ~/RaNAV/datasets/coco128_dl ~/RaNAV/datasets/exit_sign/sim_backgrounds:10
+Usage (.venv python of the workspace):
+  python training/make_synthetic.py ~/ranav_ws/datasets/exit_sign/synthetic --n-train 8000 --n-val 800 \
+      --backgrounds ~/ranav_ws/datasets/voc2007_dl ~/ranav_ws/datasets/coco128_dl ~/ranav_ws/datasets/exit_sign/sim_backgrounds:10
 """
 
 import argparse

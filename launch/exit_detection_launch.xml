@@ -12,7 +12,7 @@
        Needs FAST-LIO (camera_init -> rslidar_lio -> lio_base TF, /registered_scan_static from people_perception's
        dynamic_points_filter, both started by fast_lio_slam_launch.xml) and the D435i topics. -->
   <arg name="use_sim_time" default="true"/>
-  <arg name="model" default="$(env HOME)/RaNAV/models/exit_sign/exit_sign_736x1280.onnx"
+  <arg name="model" default="$(find-pkg-prefix exit_inspection)/../../models/exit_sign/exit_sign_736x1280.onnx"
        description="ONNX export of the exit sign detector (exit_inspection/training)"/>
   <arg name="conf" default="0.4" description="Detector confidence threshold"/>
   <arg name="use_gpu" default="true"/>

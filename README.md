@@ -74,9 +74,9 @@ After an exploration with `exits:=true` (exits.yaml, optimized_map.pcd, warehous
 FAST-LIO restarted at the exploration's spawn:
 
 ```bash
-ros2 launch fast_lio fast_lio_slam_launch.xml
+ros2 launch ranav_bringup fast_lio_slam_launch.xml pgo:=false   # pgo:=false: SC-PGO would empty save_data/Scans/
 ros2 launch exit_inspection exit_mission_launch.xml          # far_planner + zone checker + exit_inspection_pass.py
-python3 src/FAST_LIO_SLAM_ROS2/SC_PGO_ROS2/utils/map_point_picker/map_point_picker.py --port 8770
+python3 src/map_generator/scripts/map_point_picker.py --port 8770
 # "Start exit inspection" in the page, or: ros2 topic pub -1 /start_exit_inspection std_msgs/msg/String "{data: ''}"
 ```
 
@@ -93,13 +93,13 @@ the start; report in `save_data/exit_inspection/reports/<stamp>/report.html` (+ 
 With an exploration:
 
 ```bash
-ros2 launch tare_planner explore_warehouse_launch.xml exits:=true   # + exit_sign_model:=<onnx>
+ros2 launch ranav_bringup explore_warehouse_launch.xml exits:=true   # + exit_sign_model:=<onnx>
 ```
 
 Alone, next to FAST-LIO/SC-PGO and the camera:
 
 ```bash
-ros2 launch exit_inspection exit_detection_launch.xml model:=$HOME/RaNAV/models/exit_sign/exit_sign_736x1280.onnx
+ros2 launch exit_inspection exit_detection_launch.xml model:=$HOME/ranav_ws/models/exit_sign/exit_sign_736x1280.onnx
 ros2 run exit_inspection finalize_exits.py <save_directory>     # at the end
 ```
 
@@ -122,7 +122,7 @@ Parameters: `config/exit_landmark_mapper.yaml`.
   `EXITS=<exits.yaml>`), the robot stops 4.5 m in front of each door, `check_zones_gt.py` against the expected
   verdicts.
 
-## Detector training (`training/`, `.venv-yolo` python)
+## Detector training (`training/`, `.venv` python)
 
 1. `ros2 launch exit_inspection harvest_renders_launch.xml`, then `sim/harvest_renders.py` (system python): labeled
    frames of the exit room for the evaluation (`-n 600 --seed 1`) and sign-free backgrounds (`--aim 0.15 --seed 2`).

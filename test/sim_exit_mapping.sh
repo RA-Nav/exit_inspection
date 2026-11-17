@@ -7,20 +7,21 @@
 #
 # Usage: test/sim_exit_mapping.sh <work_dir> [model.onnx]
 #   ROS_DOMAIN_ID defaults to 83. Everything goes to <work_dir>, which is the launches' working directory: SC-PGO
-#   saves to ./src/FAST_LIO_SLAM_ROS2/save_data/ there (fast_lio_slam_launch.xml sets alaserPGO's save_directory twice,
-#   the hard-coded relative one wins), and the mapper asks alaserPGO for that same folder.
+#   saves to <work_dir>/save_data/ (save_directory of ranav_bringup fast_lio_slam_launch.xml, never the workspace's
+#   save_data), and the mapper asks alaserPGO for that same folder.
 #   SIM_ARGS: extra exit_room_launch.xml arguments (e.g. camera:=false for a dry run of the chain without the camera);
 #   DETECTOR=false: mapper only (no detector).
 #   Exit code: the one of check_exits_gt.py (0 = pass).
 
 W=$(realpath -m "${1:?work dir}")
-MODEL=${2:-$HOME/RaNAV/models/exit_sign/exit_sign_736x1280.onnx}
+WS=$(realpath "$(dirname "$(realpath "$0")")/../../..")  # the workspace: this is <ws>/src/exit_inspection/test
+MODEL=${2:-$WS/models/exit_sign/exit_sign_736x1280.onnx}
 export ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-83}
 HERE=$(dirname "$(realpath "$0")")
 source /opt/ros/jazzy/setup.bash
-source "$HOME/RaNAV/install/setup.bash"
+source "$WS/install/setup.bash"
 mkdir -p "$W"
-PGO="$W/src/FAST_LIO_SLAM_ROS2/save_data"
+PGO="$W/save_data"
 cd "$W" || exit 2
 PKG=$(ros2 pkg prefix exit_inspection)/share/exit_inspection
 AC=$(ros2 pkg prefix acados_legged_controller)/share/acados_legged_controller
@@ -57,7 +58,7 @@ print(x, y, z, yaw)")
 echo "[$(date +%T)] base at FAST-LIO start (world): $BASE0"
 echo "$BASE0" > base0.txt
 
-setsid ros2 launch fast_lio fast_lio_slam_launch.xml rviz:=false people:=false > lio.log 2>&1 &
+setsid ros2 launch ranav_bringup fast_lio_slam_launch.xml rviz:=false people:=false save_directory:="$PGO/" > lio.log 2>&1 &
 PIDS+=($!)
 sleep 10
 setsid ros2 launch exit_inspection exit_detection_launch.xml model:="$MODEL" detector:="${DETECTOR:-true}" \

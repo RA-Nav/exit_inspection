@@ -1,6 +1,6 @@
 """
 PCD reading with numpy only (ascii, binary, binary_compressed/LZF), copied from map_point_picker.py
-(src/FAST_LIO_SLAM_ROS2/SC_PGO_ROS2/utils/map_point_picker) so that the runtime nodes need neither open3d nor pcl.
+(src/map_generator/scripts) so that the runtime nodes need neither open3d nor pcl.
 """
 
 import io

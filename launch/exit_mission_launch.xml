@@ -13,7 +13,7 @@
          ros2 topic pub -1 /start_exit_inspection std_msgs/msg/String "{data: ''}"
        auto_start:=true starts at once. far:=false planner:=direct: no far_planner, straight goals (open rooms, tests). -->
   <arg name="use_sim_time" default="true"/>
-  <arg name="save_directory" default="$(env HOME)/RaNAV/src/FAST_LIO_SLAM_ROS2/save_data"
+  <arg name="save_directory" default="$(find-pkg-share map_generator)/save_data"
        description="Folder of the exploration (optimized_map.pcd, warehouse.vgh, exit_inspection/exits.yaml)"/>
   <arg name="exits_file" default="$(var save_directory)/exit_inspection/exits.yaml"/>
   <arg name="map_file" default="$(var save_directory)/optimized_map.pcd"/>
@@ -28,7 +28,7 @@
   <arg name="w_min" default="0.9"/>
   <arg name="debug_dump" default="false"/>
 
-  <include if="$(var far)" file="$(find-pkg-share far_planner)/launch/far_planner_launch.xml">
+  <include if="$(var far)" file="$(find-pkg-share ranav_bringup)/launch/far_planner_launch.xml">
     <arg name="use_sim_time" value="$(var use_sim_time)"/>
     <arg name="rviz" value="$(var rviz)"/>
     <arg name="graph_file" value="$(var graph_file)"/>
